@@ -13,7 +13,8 @@ from ICalManager import ICalManager
 
 def main():
     config_manager = ConfigManager()
-
+    config = None
+    
     while True:
         choice = input("Choose an option: \
                        \n1. Set up a new configuration \
@@ -35,8 +36,17 @@ def main():
             continue
         elif choice == '5':
             if not config:
-                print("Please load or set up a configuration first.")
-                continue
+                print("Configuration not loaded!")
+                load_choice = input("Would you like to load an existing configuration? (yes/no): ").lower()
+                if load_choice == 'yes':
+                    config = config_manager.load_configuration()
+                    if not config:  # If they failed or canceled loading the config
+                        continue
+                    ical_manager = ICalManager(config)
+                    calendar_manager = CalendarManager(config)
+                else:
+                    print("Please load or set up a configuration first.")
+                    continue
 
             ical_manager = ICalManager(config)
             ical_data = ical_manager.run()
