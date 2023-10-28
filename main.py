@@ -9,6 +9,8 @@
 
 import requests
 import pytz
+import argparse
+import configparser
 
 from icalendar import Calendar
 import datetime
@@ -19,9 +21,25 @@ from get_calendar_service import get_calendar_service
 
 color_assignments = {}  # Global dictionary to track color assignments
 
-def main():        
-    calendar_id = "<YOUR_TARGET_CALENDAR_ID>"
-    ical_url = "<YOUR_ICAL_URL>"
+def main():       
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="TimeEditArc - Import your TimeEdit schedule to Google Calendar")
+    parser.add_argument('--env', type=str, default='DEFAULT', help='Environment to use (e.g., development)')
+    args = parser.parse_args()
+
+    # Load configuration
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    environment = args.env
+
+    print(f"Script is running on '{environment}' environment.")
+
+    try:
+        calendar_id = config[environment]['calendar_id']
+        ical_url = config[environment]['ical_url']
+    except KeyError:
+        print(f"Error: Configuration not found for environment '{environment}' in config.ini")
+        exit(1)
     
     ical_data = fetch_ical_data(ical_url)
     for event in ical_data.walk('vevent'):
@@ -166,7 +184,7 @@ def create_or_update_google_calendar_event(event, calendar_id='primary'):
         return
 
     service = get_calendar_service()
-
+    
     google_event = {
         'summary': event.get('summary'),
         'location': event.get('location'),
