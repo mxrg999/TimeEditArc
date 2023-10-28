@@ -11,31 +11,28 @@ import requests
 import pytz
 
 from icalendar import Calendar
+import datetime
 from dateutil.parser import parse
 
 from get_calendar_service import get_calendar_service
 
+
 color_assignments = {}  # Global dictionary to track color assignments
 
-def main():
-
+def main():        
+    calendar_id = "<YOUR_TARGET_CALENDAR_ID>"
     ical_url = "<YOUR_ICAL_URL>"
+    
     ical_data = fetch_ical_data(ical_url)
-
-    index = 0
     for event in ical_data.walk('vevent'):
-
         event = extract_activity_from_description(event)
         event = modify_event_summary(event)
         event = modify_event_description(event)
         event = set_event_color_based_on_activity(event)
-
-        if index > 0 and index < 20:
-            calendar_id = "<YOUR_TARGET_CALENDAR_ID>"
-            create_or_update_google_calendar_event(event, calendar_id)
-        index += 1
+        create_or_update_google_calendar_event(event, calendar_id)
         print_event(event)
 
+    print("Your calendar has now been imported/updated.")
 
 # Fetch iCalendar data from the URL
 def fetch_ical_data(ical_url):
@@ -162,6 +159,12 @@ def find_existing_event(service, calendar_id, summary, start_time):
 
 # Create or update a Google Calendar event
 def create_or_update_google_calendar_event(event, calendar_id='primary'):
+
+    # If the event is an all-day event (i.e., it's a date object and not a datetime object), skip it
+    if isinstance(event.get('dtstart').dt, datetime.date) and not isinstance(event.get('dtstart').dt, datetime.datetime):
+        print(f"Skipping all-day event: {event.get('summary')}")
+        return
+
     service = get_calendar_service()
 
     google_event = {
