@@ -18,9 +18,14 @@
 ### How to Use:
 
 1. [Create and download credentials for Google Calendar API](#obtaining-credentialsjson-for-google-calendar-api)
-2. Set your iCalendar URL in the `ical_url` variable.
-3. Specify the target Google Calendar ID in the `calendar_id` variable.
-4. Run the `main.py` script.
+2. Set up a virtual environment (`venv`) and install the necessary packages: 
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+   pip install -r requirements.txt
+3. Set your iCalendar URL in the `ical_url` variable.
+4. Specify the target Google Calendar ID in the `calendar_id` variable.
+5. Run the `main.py` script.
 
 The script will fetch events from the specified iCalendar URL, print the event details to the console, and create corresponding events in your Google Calendar.
 
