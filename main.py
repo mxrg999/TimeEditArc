@@ -9,36 +9,53 @@
 
 import requests
 import pytz
-import argparse
 import configparser
+import datetime
 
 from icalendar import Calendar
-import datetime
 from dateutil.parser import parse
-
 from get_calendar_service import get_calendar_service
 
+color_assignments = {}  
 
-color_assignments = {}  # Global dictionary to track color assignments
+def main():
+    actions = {
+        '1': setup_configuration,
+        '2': load_configuration,
+        '3': remove_profile,
+        '4': rename_profile
+    }
 
-def main():       
-    # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="TimeEditArc - Import your TimeEdit schedule to Google Calendar")
-    parser.add_argument('--env', type=str, default='DEFAULT', help='Environment to use (e.g., development)')
-    args = parser.parse_args()
+    config = None
 
-    # Load configuration
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    environment = args.env
+    while True:
+        choice = input("Choose an option: \
+                       \n1. Set up a new configuration \
+                       \n2. Load an existing configuration \
+                       \n3. Remove a profile \
+                       \n4. Rename a profile \
+                       \nEnter your choice (1/2/3/4): ")
+        
+        if choice in actions:
+            result = actions[choice]()
+            
+            if choice in ['1', '2']:
+                config = result
+                break
+            else:
+                print("\n")
+        else:
+            print("Invalid choice. Please try again.\n")
 
-    print(f"Script is running on '{environment}' environment.")
+    if not config:
+        print("No configuration chosen. Exiting.")
+        exit(1)
 
     try:
-        calendar_id = config[environment]['calendar_id']
-        ical_url = config[environment]['ical_url']
+        calendar_id = config['calendar_id']
+        ical_url = config['ical_url']
     except KeyError:
-        print(f"Error: Configuration not found for environment '{environment}' in config.ini")
+        print(f"Error: Configuration not found for config '{config}' in config.ini")
         exit(1)
     
     ical_data = fetch_ical_data(ical_url)
@@ -51,6 +68,101 @@ def main():
         print_event(event)
 
     print("Your calendar has now been imported/updated.")
+
+
+def load_configuration():
+    """Load configuration from file."""
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    
+    config_name = input("Which configuration would you like to use? Available: " + ", ".join(config.sections()) + "\n")
+    
+    if config_name not in config:
+        print(f"Error: Configuration '{config_name}' not found!")
+        exit(1)
+
+    return config[config_name]
+
+
+def setup_configuration():
+    """Prompt the user for configuration values and save them."""
+    config_name = input("Enter configuration name (e.g., development, production): \n")
+    
+    calendar_id = input(f"Enter calendar ID for {config_name}: ")
+    ical_url = input(f"Enter iCal URL for {config_name}: ")
+
+    config = configparser.ConfigParser()
+    config.read('config.ini')  # Read existing configurations
+
+    config[config_name] = {
+        'calendar_id': calendar_id,
+        'ical_url': ical_url
+    }
+
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+    
+    return config[config_name] 
+
+
+def remove_profile():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    # Display available profiles
+    print("Available profiles:")
+    for section in config.sections():
+        print(section)
+
+    # Prompt for the profile to remove
+    profile_to_remove = input("Enter the name of the profile you wish to remove: ")
+
+    # Check if the profile exists
+    if profile_to_remove in config:
+        # Remove the profile
+        config.remove_section(profile_to_remove)
+
+        # Save changes
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+        print(f"Profile '{profile_to_remove}' has been removed successfully!")
+    else:
+        print(f"Profile '{profile_to_remove}' does not exist!")
+
+
+def rename_profile():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    # Display available profiles
+    print("Available profiles:")
+    for section in config.sections():
+        print(section)
+
+    # Prompt for the profile to rename
+    profile_to_rename = input("Enter the name of the profile you wish to rename: ")
+
+    # Check if the profile exists
+    if profile_to_rename in config:
+        # Ask for the new name
+        new_name = input("Enter the new name for the profile: ")
+
+        # Check if the new name already exists
+        if new_name in config:
+            print(f"Profile '{new_name}' already exists! Choose a different name.")
+            return
+
+        # Rename the profile
+        config[new_name] = config[profile_to_rename]
+        config.remove_section(profile_to_rename)
+
+        # Save changes
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+        print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!")
+    else:
+        print(f"Profile '{profile_to_rename}' does not exist!")
+
 
 # Fetch iCalendar data from the URL
 def fetch_ical_data(ical_url):
