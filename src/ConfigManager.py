@@ -6,16 +6,19 @@ class ConfigManager:
     def __init__(self, config=None):
         self.config = config if config else {}
         self.config_parser = configparser.ConfigParser()
-        self.config_parser.read('config.ini')
+        self.config_parser.read('config/config.ini')
 
     def load_configuration(self):
-        config_name = input("Which configuration would you like to use? Available: " + ", ".join(self.config_parser.sections()) + "\n")
+        config_name = input("Which configuration would you like to use? Available: " + 
+                            ", ".join(self.config_parser.sections()) + "\n")
 
         if config_name not in self.config_parser:
             print(f"Error: Configuration '{config_name}' not found!")
             exit(1)
 
         self.config = self.config_parser[config_name]
+
+        print(f"Configuration '{config_name}' has been loaded successfully! ")
         return self.config
 
     def setup_configuration(self):
@@ -26,24 +29,24 @@ class ConfigManager:
         ical_url = input(f"Enter iCal URL for {config_name}: ")
 
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')  # Read existing configurations
+        self.config.read('config/config.ini')
 
         self.config[config_name] = {
+            'config_name': config_name,
             'calendar_id': calendar_id,
             'ical_url': ical_url,
             'time_zone': 'Etc/GMT'
         }
 
-        with open('config.ini', 'w') as configfile:
+        with open('config/config.ini', 'w') as configfile:
             self.config.write(configfile)
         
         print(f"Configuration '{config_name}' has been saved and loaded successfully! ")
         return self.config[config_name] 
 
-
     def remove_profile(self):
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
+        self.config.read('config/config.ini')
 
         # Display available profiles
         print("Available profiles:")
@@ -59,16 +62,15 @@ class ConfigManager:
             self.config.remove_section(profile_to_remove)
 
             # Save changes
-            with open('config.ini', 'w') as configfile:
+            with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
             print(f"Profile '{profile_to_remove}' has been removed successfully!")
         else:
             print(f"Profile '{profile_to_remove}' does not exist!")
 
-
     def rename_profile(self):
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
+        self.config.read('config/config.ini')
 
         # Display available profiles
         print("Available profiles:")
@@ -93,7 +95,7 @@ class ConfigManager:
             self.config.remove_section(profile_to_rename)
 
             # Save changes
-            with open('config.ini', 'w') as configfile:
+            with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
             print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!")
         else:

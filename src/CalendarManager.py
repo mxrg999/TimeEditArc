@@ -1,8 +1,8 @@
 # CalendarManager.py
 
-from get_calendar_service import get_calendar_service
 import datetime
 import pytz
+from src.get_calendar_service import get_calendar_service
 from dateutil.parser import parse
 
 
@@ -12,7 +12,7 @@ class CalendarManager:
         self.service = get_calendar_service()
 
     # Find an existing event with the same summary and start time
-    def find_existing_event(self, service, calendar_id, summary, start_time):
+    def find_existing_event(self, calendar_id, summary, start_time):
         # Convert start_time to RFC3339 format which Google Calendar API uses
         start_time_rfc = start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
 
@@ -20,7 +20,7 @@ class CalendarManager:
         end_time = start_time.replace(hour=23, minute=59, second=59)
         end_time_rfc = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
 
-        events_result = service.events().list(calendarId=calendar_id, 
+        events_result = self.service.events().list(calendarId=calendar_id, 
                                               q=summary,  # search query
                                               timeMin=start_time_rfc, 
                                               timeMax=end_time_rfc,
@@ -48,8 +48,6 @@ class CalendarManager:
             print(f"Skipping all-day event: {event.get('summary')}")
             return
 
-        service = get_calendar_service()
-
         google_event = {
             'summary': event.get('summary'),
             'location': event.get('location'),
@@ -70,17 +68,17 @@ class CalendarManager:
         print(f"Checking for event: {google_event['summary']} at {event.get('dtstart').dt}")
 
         # Check if an event with the same summary and start time already exists
-        existing_event = self.find_existing_event(service, self.config['calendar_id'], google_event['summary'], event.get('dtstart').dt)
+        existing_event = self.find_existing_event(self.config['calendar_id'], google_event['summary'], event.get('dtstart').dt)
 
         if existing_event:
             # Update the event
-            updated_event = service.events().update(calendarId=self.config['calendar_id'], eventId=existing_event['id'], body=google_event).execute()
+            updated_event = self.service.events().update(calendarId=self.config['calendar_id'], eventId=existing_event['id'], body=google_event).execute()
             print(f"Found existing event with ID: {existing_event['id']}")
             print(f"Event updated: {updated_event['htmlLink']}")
 
         else:
             # Insert a new event
-            created_event = service.events().insert(calendarId=self.config['calendar_id'], body=google_event).execute()
+            created_event = self.service.events().insert(calendarId=self.config['calendar_id'], body=google_event).execute()
             print(f"Event created: {created_event['htmlLink']}")
             print("No existing event found.")
 

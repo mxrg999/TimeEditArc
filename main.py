@@ -7,25 +7,34 @@
     Created and maintained by @mxrg999
 """
 
-from CalendarManager import CalendarManager
-from ConfigManager import ConfigManager
-from ICalManager import ICalManager
+from src.CalendarManager import CalendarManager
+from src.ConfigManager import ConfigManager
+from src.ICalManager import ICalManager
 
 def main():
     config_manager = ConfigManager()
     config = None
-    
+
     while True:
-        choice = input("Choose an option: \
+
+        try:
+            config_name = config['config_name']
+        except:
+            config_name = '<No Config Selected>'
+
+        choice = input(f"Choose an option: \
                        \n1. Set up a new configuration \
                        \n2. Load an existing configuration \
                        \n3. Remove a profile \
                        \n4. Rename a profile \
-                       \n5. Process and update calendar \
+                       \n5. Process and update calendar using: {config_name}\
                        \nEnter your choice (1/2/3/4/5): ")
         
         if choice in ['1', '2']:
-            config = config_manager.setup_configuration() if choice == '1' else config_manager.load_configuration()
+            if choice == '1':
+                config = config_manager.setup_configuration()
+            elif choice == '2':
+                config = config_manager.load_configuration()
             ical_manager = ICalManager(config)
             calendar_manager = CalendarManager(config)
         elif choice == '3':
@@ -40,7 +49,7 @@ def main():
                 load_choice = input("Would you like to load an existing configuration? (yes/no): ").lower()
                 if load_choice == 'yes':
                     config = config_manager.load_configuration()
-                    if not config:  # If they failed or canceled loading the config
+                    if not config:
                         continue
                     ical_manager = ICalManager(config)
                     calendar_manager = CalendarManager(config)
@@ -53,7 +62,6 @@ def main():
             
             calendar_manager = CalendarManager(config)
             for event in ical_data.walk('vevent'):
-                ...
                 calendar_manager.create_or_update_event(event)
                 calendar_manager.print_event(event)
             

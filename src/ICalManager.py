@@ -3,7 +3,6 @@
 import requests
 from icalendar import Calendar
 
-
 class ICalManager:
     def __init__(self, config):
         self.config = config
@@ -54,7 +53,6 @@ class ICalManager:
 
         return event
 
-    # Modify the event's description
     def modify_event_description(self, event):
         description = event.get('description')
         new_description = description
@@ -66,7 +64,6 @@ class ICalManager:
         event['description'] = new_description
         return event
 
-    # Set the event's color based on the activity type
     def set_event_color_based_on_activity(self, event):
         self.color_assignments
 
@@ -88,7 +85,6 @@ class ICalManager:
 
         return event
 
-    # Extract the activity type from the event's description
     def extract_activity_from_description(self, event):
         description = event.get('description')
 
