@@ -1,14 +1,25 @@
 # main.py
+"""
+    Fetches iCalendar data from a URL, modifies the data, and creates or updates events on a Google Calendar.
+    The modified data includes extracted course codes and names, activity types, and assigned colors based on course and activity.
+    The script uses the Google Calendar API to create or update events on a target Google Calendar.
+
+    Created and maintained by @mxrg999
+"""
 
 import requests
-from icalendar import Calendar
-from get_calendar_service import get_calendar_service
+import pytz
 
+from icalendar import Calendar
+from dateutil.parser import parse
+
+from get_calendar_service import get_calendar_service
 
 color_assignments = {}  # Global dictionary to track color assignments
 
 def main():
-    ical_url = "https://cloud.timeedit.net/chalmers/web/public/ri6YZ438Xy5Z7gQ5Y86005Z15n0563Y0u076XQ8Qv276wZQ4Qn5660.ics" 
+
+    ical_url = "<YOUR_ICAL_URL>"
     ical_data = fetch_ical_data(ical_url)
 
     index = 0
@@ -19,12 +30,17 @@ def main():
         event = modify_event_description(event)
         event = set_event_color_based_on_activity(event)
 
-        if index == 5 or index == 6 or index == 7:
-            calendar_id = "4f24358368de9c1e26ec87f059007df9fc41831dab201f1af638e07d45d88215@group.calendar.google.com" # <YOUR_TARGET_CALENDAR_ID>
-            create_google_calendar_event(event, calendar_id)
+        if index > 0 and index < 20:
+            calendar_id = "<YOUR_TARGET_CALENDAR_ID>"
+            create_or_update_google_calendar_event(event, calendar_id)
         index += 1
         print_event(event)
 
+
+# Fetch iCalendar data from the URL
+def fetch_ical_data(ical_url):
+    response = requests.get(ical_url)
+    return Calendar.from_ical(response.text)
         
 
 # Modify the event's summary
@@ -58,7 +74,6 @@ def modify_event_summary(event):
     return event
 
 
-
 # Modify the event's description
 def modify_event_description(event):
     description = event.get('description')
@@ -70,7 +85,6 @@ def modify_event_description(event):
 
     event['description'] = new_description
     return event
-
 
 
 # Set the event's color based on the activity type
@@ -96,7 +110,6 @@ def set_event_color_based_on_activity(event):
     return event
 
 
-
 # Extract the activity type from the event's description
 def extract_activity_from_description(event):
     description = event.get('description')
@@ -116,18 +129,39 @@ def extract_activity_from_description(event):
     return event
 
 
+# Find an existing event with the same summary and start time
+def find_existing_event(service, calendar_id, summary, start_time):
+    # Convert start_time to RFC3339 format which Google Calendar API uses
+    start_time_rfc = start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    
+    # Get the end of the day for the given start_time
+    end_time = start_time.replace(hour=23, minute=59, second=59)
+    end_time_rfc = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    
+    events_result = service.events().list(calendarId=calendar_id, 
+                                          q=summary,  # search query
+                                          timeMin=start_time_rfc, 
+                                          timeMax=end_time_rfc,
+                                          singleEvents=True,
+                                          orderBy='startTime').execute()
+    
+    events = events_result.get('items', [])
+    print(f"Found {len(events)} events for the given day.")
+    
+    # Iterate through each event and find the exact match
+    for event in events: 
+        event_start_time_utc = parse(event['start'].get('dateTime')).astimezone(pytz.utc)
+        start_time_utc = parse(start_time_rfc).astimezone(pytz.utc)
+
+        if event_start_time_utc == start_time_utc and event['summary'] == summary:
+            return event
+
+    # If no exact match found, return None
+    return None
 
 
-# Fetch iCalendar data from the URL
-def fetch_ical_data(ical_url):
-    response = requests.get(ical_url)
-    return Calendar.from_ical(response.text)
-
-
-
-
-# Create a Google Calendar event from an iCalendar event
-def create_google_calendar_event(event, calendar_id='primary'):
+# Create or update a Google Calendar event
+def create_or_update_google_calendar_event(event, calendar_id='primary'):
     service = get_calendar_service()
 
     google_event = {
@@ -136,24 +170,36 @@ def create_google_calendar_event(event, calendar_id='primary'):
         'description': event.get('description'),
         'start': {
             'dateTime': event.get('dtstart').dt.strftime('%Y-%m-%dT%H:%M:%S'),
-            'timeZone': 'Europe/Stockholm', # YOUR_TIME_ZONE
+            'timeZone': 'Etc/GMT', # YOUR_TIME_ZONE 'timeZone': 'Europe/Stockholm'
         },
         'end': {
             'dateTime': event.get('dtend').dt.strftime('%Y-%m-%dT%H:%M:%S'),
-            'timeZone': 'Europe/Stockholm',
+            'timeZone': 'Etc/GMT',
         },
     }
         
     # Add colorId if it exists in the event
     if 'colorId' in event:
         google_event['colorId'] = event['colorId']
+    print(f"Checking for event: {google_event['summary']} at {event.get('dtstart').dt}")
 
-    created_event = service.events().insert(calendarId=calendar_id, body=google_event).execute()
-    print(f"Event created: {created_event['htmlLink']}")
+    # Check if an event with the same summary and start time already exists
+    existing_event = find_existing_event(service, calendar_id, google_event['summary'], event.get('dtstart').dt)
+
+    if existing_event:
+        # Update the event
+        updated_event = service.events().update(calendarId=calendar_id, eventId=existing_event['id'], body=google_event).execute()
+        print(f"Found existing event with ID: {existing_event['id']}")
+        print(f"Event updated: {updated_event['htmlLink']}")
+        
+    else:
+        # Insert a new event
+        created_event = service.events().insert(calendarId=calendar_id, body=google_event).execute()
+        print(f"Event created: {created_event['htmlLink']}")
+        print("No existing event found.")
 
 
-
-
+# Print the event's details
 def print_event(event):
     summary = event.get('summary')
     dtstart = event.get('dtstart').dt
@@ -168,8 +214,6 @@ def print_event(event):
     print(f"description: {description}")
     print(f"organizer: {organizer}")
     print("-" * 40)
-    # start = event['start'].get('dateTime', event['start'].get('date'))
-    # print(start, event['summary'])
 
 
 if __name__ == "__main__":
