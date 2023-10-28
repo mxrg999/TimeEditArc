@@ -1,10 +1,14 @@
+# iCalendar to Google Calendar Importer
+
+A Python script to fetch events from an iCalendar URL and create/update them on a Google Calendar. 
+
 ## Table of Contents
 
 - 🚀 [**Features**](#features)
 - 📖 [**How to Use**](#how-to-use)
 - 🔑 [**Google Calendar API Setup**](#obtaining-credentialsjson-for-google-calendar-api)
 
-### Features:
+## Features:
 
 - **iCalendar Integration**:
   - Fetches events from an iCalendar (`.ics`) URL.
@@ -15,7 +19,11 @@
   - Creates events in a specified Google Calendar based on the events fetched from the iCalendar URL.
   - Supports customization of event colors with the default set to Tomato for this release.
 
-### How to Use:
+- **Profile Management**:
+  - Create, load, rename, and remove configuration profiles.
+  - Keep multiple configurations and switch between them as needed.
+
+## How to Use:
 
 1. [Create and download credentials for Google Calendar API](#obtaining-credentialsjson-for-google-calendar-api)
 2. Set up a virtual environment (`venv`) and install the necessary packages: 
@@ -23,12 +31,8 @@
    python -m venv venv
    source venv/bin/activate  # On Windows, use: venv\Scripts\activate
    pip install -r requirements.txt
-3. Set your iCalendar URL in the `ical_url` variable.
-4. Specify the target Google Calendar ID in the `calendar_id` variable.
-5. Run the `main.py` script.
-
-The script will fetch events from the specified iCalendar URL, print the event details to the console, and create corresponding events in your Google Calendar.
-
+3. Run the main.py script and follow the prompts to either set up a new configuration or load an existing one.
+4. After selecting or creating a configuration, you can process and update your Google Calendar with the events from the iCalendar URL.
 
 ## Obtaining `credentials.json` for Google Calendar API:
 
@@ -60,3 +64,4 @@ Remember to never share your `credentials.json` file publicly, as it contains se
 
 ---
 
+Maintained by [@mxrg999](https://github.com/mxrg999)
