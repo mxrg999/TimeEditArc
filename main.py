@@ -1,63 +1,75 @@
 # main.py
+"""
+    Fetches iCalendar data from a URL, modifies the data, and creates or updates events on a Google Calendar.
+    The modified data includes extracted course codes and names, activity types, and assigned colors based on course and activity.
+    The script uses the Google Calendar API to create or update events on a target Google Calendar.
 
-import requests
-from icalendar import Calendar
-from get_calendar_service import get_calendar_service
+    Created and maintained by @mxrg999
+"""
 
+from src.CalendarManager import CalendarManager
+from src.ConfigManager import ConfigManager
+from src.ICalManager import ICalManager
 
 def main():
-    ical_url =  "<YOUR_ICAL_URL>"
-    ical_data = fetch_ical_data(ical_url)
+    config_manager = ConfigManager()
+    config = None
 
-    for event in ical_data.walk('vevent'):
-        calendar_id = "<YOUR_TARGET_CALENDAR_ID>"
-        create_google_calendar_event(event, calendar_id)
-        print_event(event)
+    while True:
 
+        try:
+            config_name = config['config_name']
+        except:
+            config_name = '<No Config Selected>'
+
+        choice = input(f"Choose an option: \
+                       \n1. Set up a new configuration \
+                       \n2. Load an existing configuration \
+                       \n3. Remove a profile \
+                       \n4. Rename a profile \
+                       \n5. Process and update calendar using: {config_name}\
+                       \nEnter your choice (1/2/3/4/5): ")
         
-# Fetch iCalendar data from the URL
-def fetch_ical_data(ical_url):
-    response = requests.get(ical_url)
-    return Calendar.from_ical(response.text)
+        if choice in ['1', '2']:
+            if choice == '1':
+                config = config_manager.setup_configuration()
+            elif choice == '2':
+                config = config_manager.load_configuration()
+            ical_manager = ICalManager(config)
+            calendar_manager = CalendarManager(config)
+        elif choice == '3':
+            config_manager.remove_profile()
+            continue
+        elif choice == '4':
+            config_manager.rename_profile()
+            continue
+        elif choice == '5':
+            if not config:
+                print("Configuration not loaded!")
+                load_choice = input("Would you like to load an existing configuration? (yes/no): ").lower()
+                if load_choice == 'yes':
+                    config = config_manager.load_configuration()
+                    if not config:
+                        continue
+                    ical_manager = ICalManager(config)
+                    calendar_manager = CalendarManager(config)
+                else:
+                    print("Please load or set up a configuration first.")
+                    continue
 
-
-# Create a Google Calendar event from an iCalendar event
-def create_google_calendar_event(event, calendar_id='primary'):
-    service = get_calendar_service()
-
-    google_event = {
-        'summary': event.get('summary'),
-        'location': event.get('location'),
-        'description': event.get('description'),
-        'colorId': '11', # Color: Tomato
-        'start': {
-            'dateTime': event.get('dtstart').dt.strftime('%Y-%m-%dT%H:%M:%S'),
-            'timeZone': 'Europe/Stockholm', # YOUR_TIME_ZONE
-        },
-        'end': {
-            'dateTime': event.get('dtend').dt.strftime('%Y-%m-%dT%H:%M:%S'),
-            'timeZone': 'Europe/Stockholm',
-        },
-    }
-    created_event = service.events().insert(calendarId=calendar_id, body=google_event).execute()
-    print(f"Event created: {created_event['htmlLink']}")
-
-
-def print_event(event):
-    summary = event.get('summary')
-    dtstart = event.get('dtstart').dt
-    dtend = event.get('dtend').dt
-    location = event.get('location')
-    description = event.get('description')
-    organizer = event.get('organizer')
-    print(f"summary: {summary}")
-    print(f"dtstart: {dtstart}")
-    print(f"dtend: {dtend}")
-    print(f"location: {location}")
-    print(f"description: {description}")
-    print(f"organizer: {organizer}")
-    print("-" * 40)
-
+            ical_manager = ICalManager(config)
+            ical_data = ical_manager.run()
+            
+            calendar_manager = CalendarManager(config)
+            for event in ical_data.walk('vevent'):
+                calendar_manager.create_or_update_event(event)
+                calendar_manager.print_event(event)
+            
+            print("Your calendar has now been imported/updated.")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+            continue
 
 if __name__ == "__main__":
     main()

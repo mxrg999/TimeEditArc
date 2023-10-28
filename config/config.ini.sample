@@ -1,0 +1,5 @@
+[SampleConfig]
+sample_name = SampleConfig
+calendar_id = <YOUR_CALENDAR_ID>
+ical_url = <YOUR_ICALENDAR_URL>
+time_zone = Etc/GMT
