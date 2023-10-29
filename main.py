@@ -11,6 +11,7 @@ from src.get_calendar_service import logout
 from src.CalendarManager import CalendarManager
 from src.ConfigManager import ConfigManager
 from src.ICalManager import ICalManager
+import os
 
 def main():
     config_manager = ConfigManager()
@@ -29,8 +30,9 @@ def main():
                        \n3. Remove a profile \
                        \n4. Rename a profile \
                        \n5. Log out from Google Calendar\
-                       \n6. Process and update calendar using: {config_name}\
-                       \nEnter your choice (1/2/3/4/5/6): ")
+                       \n6. Configure event colors \
+                       \n7. Process and update calendar using: {config_name}\
+                       \nEnter your choice (1/2/3/4/5/6/7): ")
         
         if choice in ['1', '2']:
             if choice == '1':
@@ -54,6 +56,8 @@ def main():
             logout()
             continue
         elif choice == '6':
+            config_manager.configure_colors()
+        elif choice == '7':
             clear_screen()
             if not config:
                 print("Configuration not loaded!")
@@ -81,7 +85,6 @@ def main():
             print("Invalid choice. Please try again.")
             continue
 
-import os
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')

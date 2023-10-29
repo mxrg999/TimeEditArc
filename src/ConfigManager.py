@@ -1,6 +1,7 @@
 # ConfigManager.py
 
 import configparser
+import os
 
 class ConfigManager:
     def __init__(self, config=None):
@@ -101,3 +102,49 @@ class ConfigManager:
             print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!\n")
         else:
             print(f"Profile '{profile_to_rename}' does not exist!\n")
+    
+    def configure_colors(self):
+        colors = {
+            "1": "Blue", 
+            "2": "Green", 
+            "3": "Purple", 
+            "4": "Red", 
+            "5": "Yellow", 
+            "6": "Orange", 
+            "7": "Turquoise", 
+            "8": "Grey", 
+            "9": "Bold Blue", 
+            "10": "Bold Green", 
+            "11": "Bold Red"
+        }
+
+        excluded_colors = self.config.get('excluded_colors', [])
+
+        while True:
+            # Display available colors
+            clear_screen()
+            print("Available colors:")
+            for key, value in colors.items():
+                if key in excluded_colors:
+                    print(f"{key}. {value} (Excluded)")
+                else:
+                    print(f"{key}. {value}")
+
+            # Toggle colors
+            choice = input("Enter the number of the color to toggle or 'done' to finish: ")
+
+            if choice in colors.keys():
+                if choice in excluded_colors:
+                    excluded_colors.remove(choice)
+                else:
+                    excluded_colors.append(choice)
+            elif choice == 'done':
+                break
+            else:
+                print("Invalid choice. Please enter a valid number or 'done' to finish.")
+        clear_screen()
+        self.config['excluded_colors'] = excluded_colors
+        print("Colors have been configured successfully!\n")
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
