@@ -33,7 +33,6 @@ def main():
                        \n6. Configure event colors \
                        \n7. Process and update calendar using: {config_name}\
                        \nEnter your choice (1/2/3/4/5/6/7): ")
-        
         if choice in ['1', '2']:
             if choice == '1':
                 clear_screen()
@@ -56,39 +55,42 @@ def main():
             logout()
             continue
         elif choice == '6':
-            config_manager.configure_colors()
+            config = ensure_config_loaded(config_manager, config)
+            if config:
+                config_manager.configure_colors()
         elif choice == '7':
             clear_screen()
-            if not config:
-                print("Configuration not loaded!")
-                load_choice = input("Would you like to load an existing configuration? (yes/no): ").lower()
-                if load_choice == 'yes':
-                    config = config_manager.load_configuration()
-                    if not config:
-                        continue
-                    ical_manager = ICalManager(config)
-                    calendar_manager = CalendarManager(config)
-                else:
-                    print("Please load or set up a configuration first.")
-                    continue
-            ical_manager = ICalManager(config)
-            ical_data = ical_manager.run()
+            config = ensure_config_loaded(config_manager, config)
+            if config:
+                ical_manager = ICalManager(config)
+                ical_data = ical_manager.run()
             
-            calendar_manager = CalendarManager(config)
-            for event in ical_data.walk('vevent'):
-                calendar_manager.create_or_update_event(event)
-                calendar_manager.print_event(event)       
-            print("Your calendar has now been imported/updated.")
-            break
+                calendar_manager = CalendarManager(config)
+                for event in ical_data.walk('vevent'):
+                    calendar_manager.create_or_update_event(event)
+                    calendar_manager.print_event(event)
+                print("Your calendar has now been imported/updated.")
+                break
         else:
             clear_screen()
             print("Invalid choice. Please try again.")
             continue
 
-
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def ensure_config_loaded(config_manager, config):
+    if not config:
+        print("Configuration not loaded!")
+        load_choice = input("Would you like to load an existing configuration? (yes/no): ").lower()
+        if load_choice == 'yes':
+            config = config_manager.load_configuration()
+            if not config:
+                return None
+        else:
+            print("Please load or set up a configuration first.")
+            return None
+    return config
 
 if __name__ == "__main__":
     main()

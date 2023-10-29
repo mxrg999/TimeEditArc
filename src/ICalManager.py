@@ -91,9 +91,18 @@ class ICalManager:
             return event
 
         # If this combination is new, assign a new color
-        # Exclude colors based on user's choice
-        excluded_colors = self.config.get('excluded_colors', [])
-        available_colors = [color for color in available_colors if color not in excluded_colors]
+        available_colors = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
+
+        try:
+            # Convert the comma-separated string to a list
+            excluded_colors = self.config.get('excluded_colors', '').split(',')
+            if '' in excluded_colors:  # Handle the case where there's no excluded color
+                excluded_colors.remove('')
+
+            # Exclude colors based on user's choice
+            available_colors = [color for color in available_colors if color not in excluded_colors]
+        except Exception as e:
+            print(f"Error processing excluded colors: {e}. Using all available colors.")
         for color in available_colors:
             if color not in self.color_assignments.values():
                 event['colorId'] = color
