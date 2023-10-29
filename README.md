@@ -17,11 +17,14 @@ A Python script to fetch events from an iCalendar URL and create/update them on 
 - **Google Calendar Integration**:
   - Uses the Google Calendar API to authenticate and interact with your Google Calendar.
   - Creates events in a specified Google Calendar based on the events fetched from the iCalendar URL.
-  - Supports customization of event colors with the default set to Tomato for this release.
+  - Supports customization of event colors. 
+  - New dynamic color configurations allowing users to exclude certain colors.
+  - Enhanced interface for managing color preferences and configurations.
 
 - **Profile Management**:
   - Create, load, rename, and remove configuration profiles.
   - Keep multiple configurations and switch between them as needed.
+  - Command-line argument functionality for directly loading and processing a specific configuration.
 
 ## How to Use:
 
@@ -31,8 +34,11 @@ A Python script to fetch events from an iCalendar URL and create/update them on 
    python -m venv venv
    source venv/bin/activate  # On Windows, use: venv\Scripts\activate
    pip install -r requirements.txt
-3. Run the main.py script and follow the prompts to either set up a new configuration or load an existing one.
-4. After selecting or creating a configuration, you can process and update your Google Calendar with the events from the iCalendar URL.
+3. To run the program in interactive mode:
+   - Execute `python main.py` and follow the on-screen prompts to set up or load a configuration.
+   - After selecting or creating a configuration, you can process and update your Google Calendar with the events from the iCalendar URL.
+4. For automation or direct configuration loading:
+   - Use the command-line argument `--config` followed by the configuration name, e.g., `python main.py --config <CONFIG_NAME>`.
 
 ## Obtaining `credentials.json` for Google Calendar API:
 
