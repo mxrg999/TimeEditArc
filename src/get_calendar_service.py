@@ -56,8 +56,8 @@ def logout():
     if os.path.exists('token.pickle'):
         try:
             os.remove('token.pickle')
-            print("Logged out successfully!\n")
+            print("Logged out successfully!")
         except Exception as e:
             print("Error logging out:", str(e))
     else:
-        print("Already logged out.\n")
+        print("Already logged out.")

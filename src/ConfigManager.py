@@ -28,9 +28,9 @@ class ConfigManager:
 
         with open('config/config.ini', 'w') as configfile:
             self.config.write(configfile)
-            
+
         clear_screen()
-        print(f"Configuration '{config_name}' has been saved and loaded successfully!\n")
+        print(f"Configuration '{config_name}' has been saved and loaded successfully!")
         return self.config[config_name]
 
     def load_configuration(self):
@@ -38,25 +38,31 @@ class ConfigManager:
         clear_screen()
         self.config_parser.read('config/config.ini') 
         available_configs = self.config_parser.sections()
-
+    
         while True:  # Loop until a valid config name is provided or user decides to exit
-            config_name = input("Which configuration would you like to use? Available: " + 
-                                ", ".join(available_configs) + "\nOr type 'exit' to cancel.\n")
-
+            # Display available configurations
+            print("Available configurations:")
+            for config in available_configs:
+                print(f"- {config}")
+            print("")
+    
+            config_name = input("Which configuration would you like to use? \nOr type 'exit' to cancel.\n")
+    
             if config_name in available_configs:
                 self.config = self.config_parser[config_name]
                 clear_screen()
-                print(f"Configuration '{config_name}' has been loaded successfully!\n")
+                print(f"Configuration '{config_name}' has been loaded successfully!")
                 return self.config
-
+    
             elif config_name.lower() == 'exit':
                 clear_screen()
                 print("Configuration loading cancelled.")
                 return None
-
+    
             else:
                 clear_screen()
                 print(f"Error: Configuration '{config_name}' not found! Please try again or type 'exit' to cancel.\n")
+
 
     def load_configuration_by_name(self, config_name):
         """Load a configuration by its name directly."""
@@ -90,10 +96,10 @@ class ConfigManager:
             with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
             clear_screen()
-            print(f"Profile '{profile_to_remove}' has been removed successfully!\n")
+            print(f"Profile '{profile_to_remove}' has been removed successfully!")
         else:
             clear_screen()
-            print(f"Profile '{profile_to_remove}' does not exist!\n")
+            print(f"Profile '{profile_to_remove}' does not exist!")
 
     def rename_profile(self):
         clear_screen()
@@ -126,10 +132,10 @@ class ConfigManager:
             with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
             clear_screen()
-            print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!\n")
+            print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!")
         else:
             clear_screen()
-            print(f"Profile '{profile_to_rename}' does not exist!\n")
+            print(f"Profile '{profile_to_rename}' does not exist!")
 
     def configure_colors(self):
         colors = {
@@ -186,7 +192,7 @@ class ConfigManager:
             self.config_parser.write(configfile)
     
         clear_screen()
-        print("Colors have been configured successfully!\n")
+        print("Colors have been configured successfully!")
 
 
 def clear_screen():

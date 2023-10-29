@@ -1,11 +1,18 @@
 # main.py
 """
-    Fetches iCalendar data from a URL, modifies the data, and creates or updates events on a Google Calendar.
-    The modified data includes extracted course codes and names, activity types, and assigned colors based on course and activity.
-    The script uses the Google Calendar API to create or update events on a target Google Calendar.
+    TimeEditArc - Your Personal Calendar Assistant
+    ------------------------------------------------
+    - Fetches iCalendar data from a specified URL.
+    - Extracts and modifies event details, including course codes, names, and activity types.
+    - Assigns distinct colors to events based on the course and activity type.
+    - Supports dynamic color configurations, allowing users to exclude or prioritize certain colors.
+    - Provides a user-friendly interface for managing multiple configuration profiles.
+    - Uses the Google Calendar API to seamlessly create or update events on a target Google Calendar.
+    - Offers an optional command-line argument to directly load and process a specific configuration.
 
     Created and maintained by @mxrg999
 """
+
 
 import os
 import argparse
@@ -46,15 +53,24 @@ class TimeEditArcApp:
 
     def display_menu(self):
         config_name = self.config['config_name'] if self.config else '<No Config Selected>'
-        return input(f"Choose an option: \
-                       \n1. Set up a new configuration \
-                       \n2. Load an existing configuration \
-                       \n3. Remove a profile \
-                       \n4. Rename a profile \
-                       \n5. Log out from Google Calendar\
-                       \n6. Configure event colors \
-                       \n7. Process and update calendar using: {config_name}\
-                       \nEnter your choice (1/2/3/4/5/6/7): ")
+    
+        menu_display = """
+-------------------------------------
+             TimeEditArc
+-------------------------------------
+Choose an option:
+1. Set up a new configuration
+2. Load an existing configuration
+3. Remove a profile
+4. Rename a profile
+5. Log out from Google Calendar
+6. Configure event colors
+7. Process and update calendar using: {0}
+
+Enter your choice (1/2/3/4/5/6/7): 
+""".format(config_name)
+    
+        return input(menu_display)
 
     def handle_menu_choice(self, choice):
         if choice == '1':
@@ -73,10 +89,18 @@ class TimeEditArcApp:
             if self.config:
                 self.config_manager.configure_colors()
         elif choice == '7':
+            clear_screen()
             self.config = ensure_config_loaded(self.config_manager, self.config)
             if self.config:
-                self.process_calendar()
+                proceed = input("Do you want to start the process of importing? (yes/no): ").lower()
+                if proceed == 'yes' or proceed == 'y':
+                    self.process_calendar()
+                else:
+                    clear_screen()
+                    print("Process cancelled by the user.")
+
         else:
+            clear_screen()
             print("Invalid choice. Please try again.")
 
     def process_calendar(self):
@@ -95,11 +119,13 @@ def clear_screen():
 
 def ensure_config_loaded(config_manager, config):
     if not config:
+        clear_screen()
         print("Configuration not loaded!")
         load_choice = input("Would you like to load an existing configuration? (yes/no): ").lower()
-        if load_choice == 'yes':
+        if load_choice == 'yes' or load_choice == 'y':
             return config_manager.load_configuration()
         else:
+            clear_screen()
             print("Please load or set up a configuration first.")
             return None
     return config
