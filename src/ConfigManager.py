@@ -11,6 +11,7 @@ class ConfigManager:
 
     def setup_configuration(self):
         """Prompt the user for configuration values and save them."""
+        clear_screen()
         config_name = input("Enter configuration name (e.g., development, production): \n")
         calendar_id = input(f"Enter calendar ID for {config_name}: ")
         ical_url = input(f"Enter iCal URL for {config_name}: ")
@@ -27,12 +28,14 @@ class ConfigManager:
 
         with open('config/config.ini', 'w') as configfile:
             self.config.write(configfile)
-
+            
+        clear_screen()
         print(f"Configuration '{config_name}' has been saved and loaded successfully!\n")
         return self.config[config_name]
 
     def load_configuration(self):
         """Load an existing configuration."""
+        clear_screen()
         self.config_parser.read('config/config.ini') 
         available_configs = self.config_parser.sections()
 
@@ -42,14 +45,17 @@ class ConfigManager:
 
             if config_name in available_configs:
                 self.config = self.config_parser[config_name]
+                clear_screen()
                 print(f"Configuration '{config_name}' has been loaded successfully!\n")
                 return self.config
 
             elif config_name.lower() == 'exit':
+                clear_screen()
                 print("Configuration loading cancelled.")
                 return None
 
             else:
+                clear_screen()
                 print(f"Error: Configuration '{config_name}' not found! Please try again or type 'exit' to cancel.\n")
 
     def load_configuration_by_name(self, config_name):
@@ -63,6 +69,7 @@ class ConfigManager:
             return None
 
     def remove_profile(self):
+        clear_screen()
         self.config = configparser.ConfigParser()
         self.config.read('config/config.ini')
 
@@ -82,11 +89,14 @@ class ConfigManager:
             # Save changes
             with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
+            clear_screen()
             print(f"Profile '{profile_to_remove}' has been removed successfully!\n")
         else:
+            clear_screen()
             print(f"Profile '{profile_to_remove}' does not exist!\n")
 
     def rename_profile(self):
+        clear_screen()
         self.config = configparser.ConfigParser()
         self.config.read('config/config.ini')
 
@@ -115,8 +125,10 @@ class ConfigManager:
             # Save changes
             with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
+            clear_screen()
             print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!\n")
         else:
+            clear_screen()
             print(f"Profile '{profile_to_rename}' does not exist!\n")
 
     def configure_colors(self):
@@ -175,7 +187,6 @@ class ConfigManager:
     
         clear_screen()
         print("Colors have been configured successfully!\n")
-
 
 
 def clear_screen():
