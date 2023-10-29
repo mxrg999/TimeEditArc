@@ -7,13 +7,42 @@
     Created and maintained by @mxrg999
 """
 
+import os
+import argparse
 from src.get_calendar_service import logout
 from src.CalendarManager import CalendarManager
 from src.ConfigManager import ConfigManager
 from src.ICalManager import ICalManager
-import os
+
 
 def main():
+    parser = argparse.ArgumentParser(description="Manage and update Google Calendar events.")
+    parser.add_argument('--config', type=str, help='Name of the configuration to load directly.')
+    args = parser.parse_args()
+
+    config_manager = ConfigManager()
+    config = None
+
+    # If --config argument is provided
+    if args.config:
+        config = config_manager.load_configuration_by_name(args.config)
+        if config:
+            print(f"Configuration '{args.config}' has been loaded successfully!\n")
+            if config:
+                ical_manager = ICalManager(config)
+                ical_data = ical_manager.run()
+            
+                calendar_manager = CalendarManager(config)
+                for event in ical_data.walk('vevent'):
+                    calendar_manager.create_or_update_event(event)
+                    calendar_manager.print_event(event)
+                print("Your calendar has now been imported/updated.")
+                exit
+        else:
+            print(f"Error: Configuration '{args.config}' not found!")
+            return
+
+
     config_manager = ConfigManager()
     config = None
     clear_screen()

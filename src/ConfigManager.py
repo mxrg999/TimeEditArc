@@ -52,6 +52,16 @@ class ConfigManager:
             else:
                 print(f"Error: Configuration '{config_name}' not found! Please try again or type 'exit' to cancel.\n")
 
+    def load_configuration_by_name(self, config_name):
+        """Load a configuration by its name directly."""
+        self.config_parser.read('config/config.ini')
+
+        if config_name in self.config_parser:
+            self.config = self.config_parser[config_name]
+            return self.config
+        else:
+            return None
+
     def remove_profile(self):
         self.config = configparser.ConfigParser()
         self.config.read('config/config.ini')
