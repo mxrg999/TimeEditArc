@@ -9,6 +9,7 @@ class ConfigManager:
         self.config_parser.read('config/config.ini')
 
     def load_configuration(self):
+        self.config_parser.read('config/config.ini') 
         config_name = input("Which configuration would you like to use? Available: " + 
                             ", ".join(self.config_parser.sections()) + "\n")
 
@@ -18,7 +19,7 @@ class ConfigManager:
 
         self.config = self.config_parser[config_name]
 
-        print(f"Configuration '{config_name}' has been loaded successfully! ")
+        print(f"Configuration '{config_name}' has been loaded successfully!\n")
         return self.config
 
     def setup_configuration(self):
@@ -41,7 +42,7 @@ class ConfigManager:
         with open('config/config.ini', 'w') as configfile:
             self.config.write(configfile)
         
-        print(f"Configuration '{config_name}' has been saved and loaded successfully! ")
+        print(f"Configuration '{config_name}' has been saved and loaded successfully!\n")
         return self.config[config_name] 
 
     def remove_profile(self):
@@ -64,9 +65,9 @@ class ConfigManager:
             # Save changes
             with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
-            print(f"Profile '{profile_to_remove}' has been removed successfully!")
+            print(f"Profile '{profile_to_remove}' has been removed successfully!\n")
         else:
-            print(f"Profile '{profile_to_remove}' does not exist!")
+            print(f"Profile '{profile_to_remove}' does not exist!\n")
 
     def rename_profile(self):
         self.config = configparser.ConfigParser()
@@ -87,7 +88,7 @@ class ConfigManager:
 
             # Check if the new name already exists
             if new_name in self.config:
-                print(f"Profile '{new_name}' already exists! Choose a different name.")
+                print(f"Profile '{new_name}' already exists! Choose a different name.\n")
                 return
 
             # Rename the profile
@@ -97,6 +98,6 @@ class ConfigManager:
             # Save changes
             with open('config/config.ini', 'w') as configfile:
                 self.config.write(configfile)
-            print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!")
+            print(f"Profile '{profile_to_rename}' has been renamed to '{new_name}' successfully!\n")
         else:
-            print(f"Profile '{profile_to_rename}' does not exist!")
+            print(f"Profile '{profile_to_rename}' does not exist!\n")

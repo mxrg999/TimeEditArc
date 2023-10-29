@@ -52,3 +52,12 @@ def get_calendar_service():
         print("Error building the service:", str(e))
         return None
 
+def logout():
+    if os.path.exists('token.pickle'):
+        try:
+            os.remove('token.pickle')
+            print("Logged out successfully!")
+        except Exception as e:
+            print("Error logging out:", str(e))
+    else:
+        print("Already logged out.")

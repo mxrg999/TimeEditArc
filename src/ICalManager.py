@@ -21,8 +21,23 @@ class ICalManager:
             event = self.set_event_color_based_on_activity(event)
 
     def fetch_ical_data(self):
-        response = requests.get(self.config['ical_url'])
-        return Calendar.from_ical(response.text)
+        try:
+            # Try fetching the data from the URL
+            response = requests.get(self.config['ical_url'], timeout=10)  # 10 seconds timeout
+            
+            # Check if the request was successful (status code 200)
+            response.raise_for_status()
+            
+            # Try parsing the iCalendar data
+            return Calendar.from_ical(response.text)
+            
+        except requests.RequestException as e:
+            print(f"Error fetching data from the URL: {str(e)}")
+            return None
+            
+        except Exception as e:
+            print(f"Error parsing the iCalendar data: {str(e)}")
+            return None
 
     def modify_event_summary(self, event):
         summary = event.get('summary')
