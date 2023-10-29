@@ -22,7 +22,7 @@ def get_calendar_service():
     # If no credentials available, prompt user to log in
     if not creds or not creds.valid:
         print("Fetching credentials...")
-        print("Please log in to your Google account to continue.")
+        print("Please log in to your Google account to continue.\n")
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
@@ -52,3 +52,12 @@ def get_calendar_service():
         print("Error building the service:", str(e))
         return None
 
+def logout():
+    if os.path.exists('token.pickle'):
+        try:
+            os.remove('token.pickle')
+            print("Logged out successfully!")
+        except Exception as e:
+            print("Error logging out:", str(e))
+    else:
+        print("Already logged out.")

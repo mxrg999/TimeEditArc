@@ -21,8 +21,23 @@ class ICalManager:
             event = self.set_event_color_based_on_activity(event)
 
     def fetch_ical_data(self):
-        response = requests.get(self.config['ical_url'])
-        return Calendar.from_ical(response.text)
+        try:
+            # Try fetching the data from the URL
+            response = requests.get(self.config['ical_url'], timeout=10)  # 10 seconds timeout
+            
+            # Check if the request was successful (status code 200)
+            response.raise_for_status()
+            
+            # Try parsing the iCalendar data
+            return Calendar.from_ical(response.text)
+            
+        except requests.RequestException as e:
+            print(f"Error fetching data from the URL: {str(e)}")
+            return None
+            
+        except Exception as e:
+            print(f"Error parsing the iCalendar data: {str(e)}")
+            return None
 
     def modify_event_summary(self, event):
         summary = event.get('summary')
@@ -77,6 +92,17 @@ class ICalManager:
 
         # If this combination is new, assign a new color
         available_colors = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
+
+        try:
+            # Convert the comma-separated string to a list
+            excluded_colors = self.config.get('excluded_colors', '').split(',')
+            if '' in excluded_colors:  # Handle the case where there's no excluded color
+                excluded_colors.remove('')
+
+            # Exclude colors based on user's choice
+            available_colors = [color for color in available_colors if color not in excluded_colors]
+        except Exception as e:
+            print(f"Error processing excluded colors: {e}. Using all available colors.")
         for color in available_colors:
             if color not in self.color_assignments.values():
                 event['colorId'] = color

@@ -5,7 +5,6 @@ import pytz
 from src.get_calendar_service import get_calendar_service
 from dateutil.parser import parse
 
-
 class CalendarManager:
     def __init__(self, config):
         self.config = config
