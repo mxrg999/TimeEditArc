@@ -1,6 +1,7 @@
 # ICalManager.py
 
 import requests
+from datetime import date
 from icalendar import Calendar
 
 class ICalManager:
@@ -69,15 +70,23 @@ class ICalManager:
         return event
 
     def modify_event_description(self, event):
-        description = event.get('description')
-        new_description = description
+        description = event.get('description', '')
 
-        activity_type = event.get('activity', None)
-        if activity_type:
-            new_description = f"{activity_type}"
+        # Check if "Date added" is already in the description
+        if "Date added:" not in description:
+            # This is the first edit, so we add the date added.
+            description = f"Date added: {date.today()}"
+        else:
+            # Remove any existing "Date updated" from the description
+            description = description.replace(
+                next((line for line in description.split('\n') if "Date updated:" in line), ''), ''
+            ).strip()
+            # Append the updated date
+            description += f"\nDate updated: {date.today()}"
 
-        event['description'] = new_description
+        event['description'] = description
         return event
+
 
     def set_event_color_based_on_activity(self, event):
         self.color_assignments
