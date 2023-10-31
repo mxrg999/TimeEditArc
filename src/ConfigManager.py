@@ -23,7 +23,7 @@ class ConfigManager:
             'config_name': config_name,
             'calendar_id': calendar_id,
             'ical_url': ical_url,
-            'time_zone': 'Etc/GMT'
+            'time_zone': 'Etc/GMT',
         }
 
         with open('config/config.ini', 'w') as configfile:
@@ -158,8 +158,12 @@ class ConfigManager:
             return
     
         # Retrieve excluded_colors from the loaded config, or use an empty list if not found
-        excluded_colors_str = self.config.get('excluded_colors', '')
-        excluded_colors = excluded_colors_str.split(',') if excluded_colors_str else []
+        excluded_colors_str = self.config.get('excluded_colors')
+        if not isinstance(excluded_colors_str, str):
+            excluded_colors = []
+        else:
+            excluded_colors = excluded_colors_str.split(',') if excluded_colors_str else []
+
     
         while True:
             # Display available colors
