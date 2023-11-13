@@ -41,7 +41,7 @@ class CalendarManager:
         return None
 
     # Create or update a Google Calendar event
-    def create_or_update_event(self, event):
+    def create_or_update_event(self, event, only_update_existing_events):
         # If the event is an all-day event (i.e., it's a date object and not a datetime object), skip it
         if isinstance(event.get('dtstart').dt, datetime.date) and not isinstance(event.get('dtstart').dt, datetime.datetime):
             print(f"Skipping all-day event: {event.get('summary')}")
@@ -75,11 +75,13 @@ class CalendarManager:
             print(f"Found existing event with ID: {existing_event['id']}")
             print(f"Event updated: {updated_event['htmlLink']}")
 
-        else:
+        elif not only_update_existing_events:
             # Insert a new event
             created_event = self.service.events().insert(calendarId=self.config['calendar_id'], body=google_event).execute()
             print(f"Event created: {created_event['htmlLink']}")
             print("No existing event found.")
+        else:
+            print("No existing event found. Skipping...")
 
     # Print the event's details
     def print_event(self, event):

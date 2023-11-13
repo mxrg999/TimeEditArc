@@ -35,13 +35,15 @@ class TimeEditArcApp:
     def load_config_from_args(self):
         parser = argparse.ArgumentParser(description="Manage and update Google Calendar events.")
         parser.add_argument('--config', type=str, help='Name of the configuration to load directly.')
+        parser.add_argument('--update', action='store_true', help='Only update existing events.')
+
         args = parser.parse_args()
 
         if args.config:
             self.config = self.config_manager.load_configuration_by_name(args.config)
             if self.config:
                 print(f"Configuration '{args.config}' has been loaded successfully!\n")
-                self.process_calendar()
+                self.process_calendar(args.update)
             else:
                 print(f"Error: Configuration '{args.config}' not found!")
 
@@ -94,7 +96,7 @@ Enter your choice (1/2/3/4/5/6/7):
             if self.config:
                 proceed = input("Do you want to start the process of importing? (yes/no): ").lower()
                 if proceed == 'yes' or proceed == 'y':
-                    self.process_calendar()
+                    self.process_calendar(False)
                 else:
                     clear_screen()
                     print("Process cancelled by the user.")
@@ -103,12 +105,12 @@ Enter your choice (1/2/3/4/5/6/7):
             clear_screen()
             print("Invalid choice. Please try again.")
 
-    def process_calendar(self):
+    def process_calendar(self, only_update_existing_events):
         ical_manager = ICalManager(self.config)
         ical_data = ical_manager.run()
         calendar_manager = CalendarManager(self.config)
         for event in ical_data.walk('vevent'):
-            calendar_manager.create_or_update_event(event)
+            calendar_manager.create_or_update_event(event, only_update_existing_events)
             calendar_manager.print_event(event)
         print("Your calendar has now been imported/updated.")
 
