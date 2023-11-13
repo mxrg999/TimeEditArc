@@ -12,45 +12,49 @@ def get_calendar_service():
 
     # Check if token.pickle file exists
     if os.path.exists('token.pickle'):
-        try:
-            with open('token.pickle', 'rb') as token:
-                creds = pickle.load(token)
-        except Exception as e:
-            print("Error loading token.pickle:", str(e))
-            return None
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
 
-    # If no credentials available, prompt user to log in
+    # If credentials are not valid (expired, revoked, etc.), reauthenticate
     if not creds or not creds.valid:
-        print("Fetching credentials...")
-        print("Please log in to your Google account to continue.\n")
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
             try:
-                flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-            except FileNotFoundError:
-                print("Error: credentials.json file not found.")
-                return None
+                creds.refresh(Request())
             except Exception as e:
-                print("Error initializing authentication flow:", str(e))
-                return None
+                print("Refreshing token failed:", str(e))
+                # If refresh fails, delete the token.pickle and re-authenticate
+                if os.path.exists('token.pickle'):
+                    os.remove('token.pickle')
+                creds = None
+        else:
+            creds = authenticate_user(SCOPES)
 
-        # Save the credentials for the next run
+    # Proceed if creds are available
+    if creds:
         try:
-            with open('token.pickle', 'wb') as token:
-                pickle.dump(creds, token)
-            print("Saving credentials...")
+            service = build('calendar', 'v3', credentials=creds)
+            return service
         except Exception as e:
-            print("Error saving token.pickle:", str(e))
+            print("Error building the service:", str(e))
             return None
-
-    try:
-        service = build('calendar', 'v3', credentials=creds)
-        return service
-    except Exception as e:
-        print("Error building the service:", str(e))
+    else:
         return None
+
+def authenticate_user(SCOPES):
+    try:
+        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+        print("Saving credentials...")
+        return creds
+    except FileNotFoundError:
+        print("Error: credentials.json file not found.")
+    except Exception as e:
+        print("Error initializing authentication flow:", str(e))
+    return None
+
 
 def logout():
     if os.path.exists('token.pickle'):
