@@ -111,7 +111,7 @@ Enter your choice (1/2/3/4/5/6/7):
         calendar_manager = CalendarManager(self.config)
         for event in ical_data.walk('vevent'):
             calendar_manager.create_or_update_event(event, only_update_existing_events)
-            calendar_manager.print_event(event)
+            print("")
         print("Your calendar has now been imported/updated.")
 
 

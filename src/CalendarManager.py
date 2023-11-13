@@ -72,15 +72,15 @@ class CalendarManager:
         if existing_event:
             # Update the event
             updated_event = self.service.events().update(calendarId=self.config['calendar_id'], eventId=existing_event['id'], body=google_event).execute()
-            print(f"Found existing event with ID: {existing_event['id']}")
-            print(f"Event updated: {updated_event['htmlLink']}")
-
+            print(f"Event updated. ID: {updated_event['id']}")
+            self.print_event(event)
         elif not only_update_existing_events:
             # Insert a new event
             created_event = self.service.events().insert(calendarId=self.config['calendar_id'], body=google_event).execute()
-            print(f"Event created: {created_event['htmlLink']}")
             print("No existing event found.")
+            print(f"Event created. ID: {created_event['id']}")
         else:
+            # No existing event found and only_update_existing_events is True
             print("No existing event found. Skipping...")
 
     # Print the event's details
