@@ -61,6 +61,23 @@ class ICalManager:
                 new_summary = f"{course_name} - {activity_type} - {course_code}"
             else:
                 new_summary = f"{course_name} - {course_code}"
+        # Check if '. Kursnamn: ' is in the string
+        elif '. Kursnamn: ' in course_parts[0]:
+            course_code, course_name = course_parts[0].split('. Kursnamn: ')
+
+            # Add the extracted course code and name to the event object
+            event['course_code'] = course_code  
+            event['course_name'] = course_name
+
+            # Create a new summary based on the extracted course code and name
+            new_summary = f"{course_name} - {course_code}"
+
+            # Add the activity type to the summary if it exists
+            activity_type = event.get('activity', None)
+            if activity_type: 
+                new_summary = f"{course_name} - {activity_type} - {course_code}"
+            else:
+                new_summary = f"{course_name} - {course_code}"
         else: # Use the first part as-is if it doesn't match the expected format
             new_summary = course_parts[0]  
 
