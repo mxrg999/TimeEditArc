@@ -24,6 +24,7 @@ class ConfigManager:
             'calendar_id': calendar_id,
             'ical_url': ical_url,
             'time_zone': 'Etc/GMT',
+            'excluded_colors': '',	
         }
 
         with open('config/config.ini', 'w') as configfile:
@@ -139,17 +140,17 @@ class ConfigManager:
 
     def configure_colors(self):
         colors = {
-            "1": "Blue", 
-            "2": "Green", 
-            "3": "Purple", 
-            "4": "Red", 
-            "5": "Yellow", 
-            "6": "Orange", 
-            "7": "Turquoise", 
-            "8": "Grey", 
-            "9": "Bold Blue", 
-            "10": "Bold Green", 
-            "11": "Bold Red"
+            "1": "Lavender", 
+            "2": "Sage", 
+            "3": "Grape", 
+            "4": "Flamingo", 
+            "5": "Banana", 
+            "6": "Tangerine", 
+            "7": "Peacock", 
+            "8": "Graphite", 
+            "9": "Blueberry", 
+            "10": "Basil", 
+            "11": "Tomato"
         }
     
         # First, ensure that the correct section exists in the config
@@ -157,14 +158,20 @@ class ConfigManager:
             print("No configuration is currently loaded. Please load a configuration first.")
             return
     
-        # Retrieve excluded_colors from the loaded config, or use an empty list if not found
-        excluded_colors_str = self.config.get('excluded_colors')
-        if not isinstance(excluded_colors_str, str):
-            excluded_colors = []
-        else:
-            excluded_colors = excluded_colors_str.split(',') if excluded_colors_str else []
+        if self.config['config_name'] not in self.config_parser:
+            print(f"Error: Configuration '{self.config['config_name']}' not found!")
+            return
+        
+        config_name = self.config['config_name']
 
-    
+       # Load current excluded colors
+        if self.config_parser.has_option(config_name, 'excluded_colors'):
+            excluded_colors_str = self.config_parser.get(config_name, 'excluded_colors')
+        else:
+            excluded_colors_str = ''
+
+        excluded_colors = excluded_colors_str.split(',') if excluded_colors_str else []
+
         while True:
             # Display available colors
             clear_screen()
@@ -188,13 +195,13 @@ class ConfigManager:
             else:
                 print("Invalid choice. Please enter a valid number or 'done' to finish.")
     
-        # Save the updated excluded colors to the loaded config
-        self.config['excluded_colors'] = ",".join(excluded_colors)
-    
+         # Update the excluded_colors in the configuration
+        self.config_parser.set(config_name, 'excluded_colors', ",".join(excluded_colors))
+
         # Save the updated configuration to the file
         with open('config/config.ini', 'w') as configfile:
             self.config_parser.write(configfile)
-    
+
         clear_screen()
         print("Colors have been configured successfully!")
 
