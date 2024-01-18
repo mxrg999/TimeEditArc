@@ -12,6 +12,11 @@ class CalendarManager:
 
     # Find an existing event with the same summary and start time
     def find_existing_event(self, calendar_id, summary, start_time):
+        # Check if self.service is initialized
+        if self.service is None:
+            print("Error: Google Calendar service is not initialized.")
+            return None
+        
         # Convert start_time to RFC3339 format which Google Calendar API uses
         start_time_rfc = start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
 
